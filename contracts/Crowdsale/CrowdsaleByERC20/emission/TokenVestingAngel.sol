@@ -26,11 +26,11 @@ contract TokenVestingAngel is Ownable {
 
     // 释放规则参数
     // 每阶段释放时间
-    uint256[] private _stageTime = [10 minutes, 20 minutes, 20 minutes, 15 minutes];
+    uint256[] private _stageTime = [80 weeks, 80 weeks];
     // 每阶段截断时间单位
-    uint256[] private _stageCliffUnit = [5 minutes, 5 minutes, 10 minutes, 5 minutes];
+    uint256[] private _stageCliffUnit = [4 weeks, 4 weeks];
     // 每阶段释放比例
-    uint256[] private _stageRate = [20, 20, 30, 30];
+    uint256[] private _stageRate = [40, 60];
 
     constructor (address beneficiary, uint256 start) public {
         require(beneficiary != address(0), "TokenVestingAngel: beneficiary is the zero address");

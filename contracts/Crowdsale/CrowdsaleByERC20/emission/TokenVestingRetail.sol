@@ -26,9 +26,9 @@ contract TokenVestingRetail is Ownable {
 
     // 释放规则参数
     // 每阶段释放时间
-    uint256[] private _stageTime = [10 minutes, 20 minutes];
+    uint256[] private _stageTime = [40 weeks, 40 weeks];
     // 每阶段截断时间单位
-    uint256[] private _stageCliffUnit = [5 minutes, 5 minutes];
+    uint256[] private _stageCliffUnit = [4 weeks, 4 weeks];
     // 每阶段释放比例
     uint256[] private _stageRate = [40, 60];
 
