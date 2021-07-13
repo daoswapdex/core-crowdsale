@@ -11,26 +11,26 @@ contract CrowdsaleForAngel is Ownable {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
-    // 兑换代币地址
+    // token address
     IERC20 private _token;
     address private _tokenWallet;
 
-    // 每个地址已众筹的额度
+    // joined amount
     mapping(address => uint256) public joined;
 
-    // 上传报表格式参数
+    // report parames
     struct ReportInfo {
         address token;
         uint256 amount;
     }
 
-    // 分期释放信息结构
+    // TokenVesting Info
     struct TokenVestingInfo {
         address tokenVesting;
         uint256 tokenAmount;
     }
 
-    // 通过受益人Token查分期释放信息
+    // Get TokenVesting info by Beneficiary token
     mapping(address => TokenVestingInfo) public TokenVestingInfoByBeneficiaryToken;
 
     constructor(IERC20 token, address tokenWallet) Ownable() public {
@@ -41,7 +41,7 @@ contract CrowdsaleForAngel is Ownable {
         _tokenWallet = tokenWallet;
     }
 
-    // 上传报表数据
+    // upload report
     function updateList(ReportInfo[] memory list) public onlyOwner {
         require(list.length > 0, "CrowdsaleForAngel： list array is null");
         for (uint i = 0; i < list.length; i++) {
@@ -52,21 +52,21 @@ contract CrowdsaleForAngel is Ownable {
         }
     }
 
-    // 执行提交
+    // exec submit
     function _deliverTokens(address beneficiary, uint256 amount) internal {
         uint256 tokenAmount = amount * (10**uint256(18));
-        // 记录参与人代币数量
+        // recode joined amount
         joined[beneficiary] = joined[beneficiary].add(tokenAmount);
 
         TokenVestingInfo storage info = TokenVestingInfoByBeneficiaryToken[beneficiary];
         require(info.tokenVesting == address(0), 'CrowdsaleForAngel::deploy: The address has participated in crowdfunding');
 
         info.tokenVesting = address(new TokenVestingAngel(
-            beneficiary, // 受益人地址
-            block.timestamp // 当前众筹时间
+            beneficiary,
+            block.timestamp
         ));
         info.tokenAmount = tokenAmount;
-        // 代币转入分期释放合约地址
+        // transfer token to tokenVestion contract
         _token.safeTransferFrom(_tokenWallet, info.tokenVesting, tokenAmount);
     }
 }

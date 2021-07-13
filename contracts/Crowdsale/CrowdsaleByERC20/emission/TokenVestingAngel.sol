@@ -10,26 +10,24 @@ contract TokenVestingAngel is Ownable {
 
     event TokensReleased(address token, uint256 amount);
 
-    // 受益人地址
     address private _beneficiary;
 
-    // UNIX time，UTC时间戳，单位秒，类型uint，与 block.timestamp 一致
-    // 合约开始时间，即锁定开始时间
+    // UNIX time，UTC timestamp，unit second，type uint，same as block.timestamp
+    // start timestamp
     uint256 private _start;
-    // 锁定周期，例如：4年
+    // lock duration
     uint256 private _duration;
-    // 总释放比例
+    // release rate
     uint256 private _totalShares;
 
-    // 记录每个币种的已释放量
+    // recode token released amount
     mapping (address => uint256) private _released;
 
-    // 释放规则参数
-    // 每阶段释放时间
+    // per stage release time
     uint256[] private _stageTime = [80 weeks, 80 weeks];
-    // 每阶段截断时间单位
+    // per stage cliff time
     uint256[] private _stageCliffUnit = [4 weeks, 4 weeks];
-    // 每阶段释放比例
+    // per stage release rate
     uint256[] private _stageRate = [40, 60];
 
     constructor (address beneficiary, uint256 start) public {
@@ -75,7 +73,7 @@ contract TokenVestingAngel is Ownable {
         return _released[token];
     }
 
-    // 提取代币
+    // claim token
     function release(IERC20 token) public {
         uint256 unreleased = releasableAmount(token);
 
@@ -88,30 +86,24 @@ contract TokenVestingAngel is Ownable {
         emit TokensReleased(address(token), unreleased);
     }
 
-    // 计算可提取代币数量
+    // calc releaseable token amount
     function releasableAmount(IERC20 token) public view returns (uint256) {
         return _vestedAmount(token).sub(_released[address(token)]);
     }
 
-    // 计算已释放代币数量
+    // calc released token amount
     function _vestedAmount(IERC20 token) private view returns (uint256) {
         uint256 currentBalance = token.balanceOf(address(this));
         uint256 totalBalance = currentBalance.add(_released[address(token)]);
 
-        // 按条件计算已释放代币数量
         if (block.timestamp >= _start.add(_duration)) {
             return totalBalance;
         } else {
-            // 确认是否跳出循环
             bool isJumpFor = false;
-            // 记录已释放代币数量
             uint256 vestedAmount = 0;
-            // 累计释放时间
             uint256 cumulativeTime = _start;
             for (uint256 i = 0; i < _stageTime.length; i++) {
-                // 计算每阶段释放次数
                 uint256 vestCount = _stageTime[i].div(_stageCliffUnit[i]);
-                // 计算每阶段每次的释放比例
                 uint256 vestRate = _stageRate[i].div(vestCount);
                 for (uint256 j = 0; j < vestCount; j++) {
                     cumulativeTime = cumulativeTime.add(_stageCliffUnit[i]);
